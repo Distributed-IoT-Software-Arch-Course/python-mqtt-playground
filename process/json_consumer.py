@@ -5,22 +5,35 @@ import paho.mqtt.client as mqtt
 from model.message_descriptor import MessageDescriptor
 import json
 
-
 # Full MQTT client creation with all the parameters. The only one mandatory in the ClientId that should be unique
 # mqtt_client = Client(client_id="", clean_session=True, userdata=None, protocol=MQTTv311, transport=”tcp”)
 
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
+
+    # Print the connection result contained in the variable rc
     print("Connected with result code " + str(rc))
+
+    # After the connection is established, we subscribe to the default topic
     mqtt_client.subscribe(default_topic)
+
+    # Print the topic we are subscribed to
     print("Subscribed to: " + default_topic)
 
 
 # Define a callback method to receive asynchronous messages
 def on_message(client, userdata, message):
+
+    # If the message received is in the default topic, we print the message
     if message.topic == default_topic:
+
+        # Decode the message payload from an array of bytes to a string
         message_payload = str(message.payload.decode("utf-8"))
+
+        # Create a MessageDescriptor object from the JSON payload
         message_descriptor = MessageDescriptor(**json.loads(message_payload))
+
+        # Print the message received from the broker
         print(f"Received IoT Message: Topic: {message.topic} Timestamp: {message_descriptor.timestamp} Type: {message_descriptor.type} Value: {message_descriptor.value}")
 
 

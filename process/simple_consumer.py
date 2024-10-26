@@ -1,7 +1,5 @@
 # For this example we rely on the Paho MQTT Library for Python
 # You can install it through the following command: pip install paho-mqtt
-import time
-
 import paho.mqtt.client as mqtt
 
 
@@ -10,13 +8,22 @@ import paho.mqtt.client as mqtt
 
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
+
+    # Print the connection result contained in the variable rc
     print("Connected with result code " + str(rc))
+
+    # After the connection is established, we subscribe to the default topic
     mqtt_client.subscribe(default_topic)
+
+    # Print the topic we are subscribed to
     print("Subscribed to: " + default_topic)
 
 
 # Define a callback method to receive asynchronous messages
 def on_message(client, userdata, message):
+
+    # Print the message received from the broker
+    # Available attributes: payload, topic, qos, retain
     print("\n##########################################################")
     print("message received: ", str(message.payload.decode("utf-8")))
     print("message topic=", message.topic)

@@ -4,20 +4,29 @@ import time
 
 import paho.mqtt.client as mqtt
 
-
 # Full MQTT client creation with all the parameters. The only one mandatory in the ClientId that should be unique
 # mqtt_client = Client(client_id="", clean_session=True, userdata=None, protocol=MQTTv311, transport=”tcp”)
 
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
+    # Print the connection result contained in the variable rc
     print("Connected with result code " + str(rc))
+
+    # After the connection is established, we subscribe to the target topic composed by the account
+    # topic prefix and the wildcard character #
     target_topic = account_topic_prefix + "#"
+
+    # Subscribe to the target topic
     mqtt_client.subscribe(target_topic)
+
+    # Print the topic we are subscribed to
     print("Subscribed to: " + target_topic)
 
 
 # Define a callback method to receive asynchronous messages
 def on_message(client, userdata, message):
+    # Print the message received from the broker
+    # Available attributes: payload, topic, qos, retain
     print("\n##########################################################")
     print("message received: ", str(message.payload.decode("utf-8")))
     print("message topic=", message.topic)
