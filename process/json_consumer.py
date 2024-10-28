@@ -4,6 +4,7 @@
 import paho.mqtt.client as mqtt
 from model.message_descriptor import MessageDescriptor
 import json
+import traceback
 
 # Full MQTT client creation with all the parameters. The only one mandatory in the ClientId that should be unique
 # mqtt_client = Client(client_id="", clean_session=True, userdata=None, protocol=MQTTv311, transport=”tcp”)
@@ -26,16 +27,22 @@ def on_message(client, userdata, message):
 
     # If the message received is in the default topic, we print the message
     if message.topic == default_topic:
+        try:
+            # Decode the message payload from an array of bytes to a string
+            message_payload = str(message.payload.decode("utf-8"))
 
-        # Decode the message payload from an array of bytes to a string
-        message_payload = str(message.payload.decode("utf-8"))
+            # Create a MessageDescriptor object from the JSON payload
+            message_descriptor = MessageDescriptor(**json.loads(message_payload))
 
-        # Create a MessageDescriptor object from the JSON payload
-        message_descriptor = MessageDescriptor(**json.loads(message_payload))
+            # Print the message received from the broker
+            print(
+                f"Received IoT Message: Topic: {message.topic} Timestamp: {message_descriptor.timestamp} Type: {message_descriptor.value_type} Value: {message_descriptor.value}")
+        except Exception as e:
+            # Print the exception traceback
+            traceback.print_exc()
 
-        # Print the message received from the broker
-        print(f"Received IoT Message: Topic: {message.topic} Timestamp: {message_descriptor.timestamp} Type: {message_descriptor.type} Value: {message_descriptor.value}")
-
+            # Print the error message
+            print(f"Error processing message: {e}")
 
 # Configuration variables
 client_id = "clientId0001-Consumer"

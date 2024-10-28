@@ -5,7 +5,7 @@ import paho.mqtt.client as mqtt
 from model.device_descriptor import DeviceDescriptor
 from model.message_descriptor import MessageDescriptor
 import json
-
+import traceback
 
 # Full MQTT client creation with all the parameters. The only one mandatory in the ClientId that should be unique
 # mqtt_client = Client(client_id="", clean_session=True, userdata=None, protocol=MQTTv311, transport=”tcp”)
@@ -24,13 +24,31 @@ def on_connect(client, userdata, flags, rc):
     print("Subscribed to: " + device_info_topic)
     print("Subscribed to: " + data_topic)
 
+
 # Define a callback method to receive asynchronous messages
 def on_message(client, userdata, message):
 
     # If the message received is in the device info topic
     # We use the MQTT Paho topic_matches_sub method to match the topic with the device info topic
     if mqtt.topic_matches_sub(device_info_topic, message.topic):
+        handle_device_info_message(message)
+    # If the message received is in the data topic
+    # We use the MQTT Paho topic_matches_sub method to match the topic with the device info topic
+    elif mqtt.topic_matches_sub(data_topic, message.topic):
+        handle_device_telemetry_message(message)
+    # If the message received is in an unmanaged topic
+    else:
+        print("Unmanaged Topic !")
 
+
+def handle_device_info_message(message):
+    """
+    Handle the device info message received from the broker
+    :param message:
+    :return:
+    """
+
+    try:
         # Decode the message payload from an array of bytes to a string
         message_payload = str(message.payload.decode("utf-8"))
 
@@ -38,11 +56,23 @@ def on_message(client, userdata, message):
         device_descriptor = DeviceDescriptor(**json.loads(message_payload))
 
         # Print the message received from the broker
-        print(f"Received IoT Message (Retained:{message.retain}): Topic: {message.topic} DeviceId: {device_descriptor.deviceId} Manufacturer: {device_descriptor.producer} SoftwareVersion: {device_descriptor.softwareVersion}")
-    # If the message received is in the data topic
-    # We use the MQTT Paho topic_matches_sub method to match the topic with the device info topic
-    elif mqtt.topic_matches_sub(data_topic, message.topic):
+        print(f"Received IoT Message (Retained:{message.retain}): Topic: {message.topic} DeviceId: {device_descriptor.device_id} Manufacturer: {device_descriptor.producer} SoftwareVersion: {device_descriptor.software_version}")
+    except Exception as e:
 
+        # Print the exception traceback
+        #traceback.print_exc()
+
+        # Print the error message
+        print(f"Error processing message: {e}")
+
+
+def handle_device_telemetry_message(message):
+    """
+    Handle the device telemetry message received from the broker
+    :param message:
+    :return:
+    """
+    try:
         # Decode the message payload from an array of bytes to a string
         message_payload = str(message.payload.decode("utf-8"))
 
@@ -50,10 +80,15 @@ def on_message(client, userdata, message):
         message_descriptor = MessageDescriptor(**json.loads(message_payload))
 
         # Print the message received from the broker
-        print(f"Received IoT Message: Topic: {message.topic} Timestamp: {message_descriptor.timestamp} Type: {message_descriptor.type} Value: {message_descriptor.value}")
-    # If the message received is in an unmanaged topic
-    else:
-        print("Unmanaged Topic !")
+        print(
+            f"Received IoT Message: Topic: {message.topic} Timestamp: {message_descriptor.timestamp} Type: {message_descriptor.value_type} Value: {message_descriptor.value}")
+    except Exception as e:
+
+        # Print the exception traceback
+        #traceback.print_exc()
+
+        # Print the error message
+        print(f"Error processing message: {e}")
 
 
 # Configuration variables

@@ -12,7 +12,7 @@ class MessageDescriptor:
         """
 
         self.timestamp = timestamp
-        self.type = value_type
+        self.value_type = value_type
         self.value = value
 
     def to_json(self):

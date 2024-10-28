@@ -20,7 +20,7 @@ def publish_device_info():
     # mqtt_client.publish(topic, payload=None, qos=0, retain=False)
 
     # Build the target topic and the payload string
-    target_topic = "{0}/{1}/info".format(device_base_topic, device_descriptor.deviceId)
+    target_topic = "{0}/{1}/info".format(device_base_topic, device_descriptor.device_id)
 
     # Serialize the Device Descriptor to a JSON string
     device_payload_string = device_descriptor.to_json()
@@ -56,7 +56,7 @@ mqtt_client.loop_start()
 # Create Demo Temperature Sensor & Device Descriptor
 temperature_sensor = TemperatureSensor()
 
-# Create a Device Descriptor with a random UUID
+# Create a Device Descriptor with a random UUID (Universally Unique Identifier - Standardized 128-bit format)
 device_descriptor = DeviceDescriptor(str(uuid.uuid1()), "PYTHON-ACME_CORPORATION", "0.1-beta")
 
 # Publish the Device Info with the dedicated method
@@ -74,7 +74,7 @@ for message_id in range(message_limit):
                                        temperature_sensor.temperature_value).to_json()
 
     # Build the target topic
-    data_topic = "{0}/{1}/{2}".format(device_base_topic, device_descriptor.deviceId, sensor_topic)
+    data_topic = "{0}/{1}/{2}".format(device_base_topic, device_descriptor.device_id, sensor_topic)
 
     # Publish the message to the target topic
     mqtt_client.publish(data_topic, payload_string)

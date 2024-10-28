@@ -6,9 +6,9 @@ class DeviceDescriptor:
 
     def __init__(self, device_id, producer, software_version):
         """ Constructor for DeviceDescriptor class """
-        self.deviceId = device_id
+        self.device_id = device_id
         self.producer = producer
-        self.softwareVersion = software_version
+        self.software_version = software_version
 
     def to_json(self):
         """ Convert the object to a JSON string """
