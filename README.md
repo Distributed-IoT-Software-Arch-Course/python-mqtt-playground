@@ -79,7 +79,7 @@ allowing it to process and interpret the structured data effectively.
 - **Python Files**:
   - `process/json_producer.py`
   - `process/json_consumer.py`
-  - `model/message_descriptor.py`
+  - `dto/message_descriptor.py`
 
 - **Producer**:
   - Connect to the MQTT Broker.
@@ -117,8 +117,8 @@ for sensor data, enabling it to interpret and process the different data types.
 - **Python Files**:
   - `process/device_producer.py`
   - `process/device_consumer.py`
-  - `model/device_descriptor.py`
-  - `model/message_descriptor.py`
+  - `dto/device_descriptor.py`
+  - `dto/message_descriptor.py`
 
 - **Producer**:
   - Connect to the MQTT Broker.
@@ -166,22 +166,130 @@ including the temperature data from sensor/temperature. As messages arrive, the 
 
 ### 5. MQTT IoT Smart Object
 
-![](images/mqtt_smart_object.png)
+![](images/mqtt_smart_object_v3.png)
 
-In this subsection outlines the core characteristics of a traditional MQTT-enabled IoT device designed for telemetry and event-based data generation. 
-Unlike the previous exercises, this example is not an implemented exercise but serves as a reference model for understanding typical MQTT Smart Object functionality.
+In this subsection outlines the core characteristics of a traditional MQTT-enabled IoT device designed for telemetry and event-based data generation
+together with the management of incoming actions. 
 
 **MQTT Smart Object Design**:
 - Usually an MQTT Smart Object manages a list of resources, such as various types of sensors (e.g., light, temperature, humidity). Each sensor represents a distinct resource that periodically generates data.
 - Telemetry: The Smart Object publishes telemetry data from each sensor at regular intervals, updating subscribers with current readings. Telemetry messages are generally non-retained, as they are time-sensitive data snapshots.
-- Event Publishing: In addition to telemetry, the Smart Object can generate and publish event messages associated with its operational status. These events, such as alerts or notifications, are retained by the Broker to ensure new consumers can access the latest event data even if they connect after the initial event is published.
+- Event: In addition to telemetry, the Smart Object can generate and publish event messages associated with its operational status. These events, such as alerts or notifications, are retained by the Broker to ensure new consumers can access the latest event data even if they connect after the initial event is published.
+- Actions: The Smart Object can also subscribe to specific topics to receive commands or actions from external sources. These incoming messages allow the device to perform tasks or respond to adjustments, enabling bidirectional communication and control within the MQTT ecosystem.
 
-**Bidirectional Functionality - Adding Actuation Capabilities**:
-
-- Beyond just producing telemetry and events, an MQTT IoT Smart Object can also act as an actuator by subscribing to specific "action" topics. Through these incoming topics, the device can receive commands or actions from external sources, enabling it to both produce data and respond to control signals.
-- For instance, the Smart Object might subscribe to a topic like device/<id>/action, which allows it to perform tasks or respond to adjustments when a message is published to that topic. In this way, the Smart Object becomes both a data producer and a controllable actuator within the MQTT ecosystem.
-
-This example encapsulates the typical roles of an MQTT IoT device, from telemetry and event generation to optional actuation capabilities, 
+This example encapsulates the typical roles of an MQTT IoT device in the Smart Object file `mqtt_smart_object.py`, from telemetry and event generation to optional actuation capabilities, 
 showing how MQTT Smart Objects enable comprehensive and interactive IoT applications.
+To emulate an external controller for the device the file `mqtt_smart_object_controller.py` is provided, which can send commands to the Smart Object and receive its telemetry and event data.
 
+- **Python Files**:
+  - `process/`:
+    - `mqtt_smart_object.py`: MQTT Smart Object implementation.
+    - `mqtt_smart_object_controller.py`: Smart Object Controller for sending commands and receiving data.
+  - `dto/`:
+    - `device_descriptor.py`: Device Descriptor class for device information.
+    - `message_descriptor.py`: Message Descriptor class for telemetry and event data.
+    - `event_descriptor.py`: Event Descriptor class for event data.
+    - `action_descriptor.py`: Action Descriptor class for incoming actions.
 
+- **MQTT Smart Object**:
+  - Connect to the MQTT Broker.
+  - Publish device information `/device/<device_id>/info` topic, setting `Retained = true`.
+  - Publish telemetry data from available sensors on the topic `/device/<device_id>/telemetry/<sensor_id>`
+    - Telemetry messages include also both sensors and variations on the actuator status (e.g., switch ON/OFF).
+  - Publish event messages based on device status on the topic `/device/<device_id>/event`
+  - Subscribe to action topics to receive incoming commands on topic `/device/<device_id>/action/<action_id>`
+
+- **MQTT Smart Object Controller**:
+  - Connect to the MQTT Broker
+  - Subscribe to device `info`, `telemetry`, and `event` topics of the Smart Object
+  - When the received value (e.g., temperature) is above a certain threshold, send an action command to the Smart Object to switch `OFF` the actuator
+  - Start a Timer to send a command to the Smart Object to switch `ON` the actuator after a certain time interval
+
+#### Threads & Timer Information
+
+In this example we use the `threading` library to manage the MQTT Smart Object and Controller in separate threads 
+and timer to execute functions at specific intervals. The `threading` library provides a way to run multiple functions concurrently,
+
+In Python, threading allows for the execution of multiple operations concurrently within a program. This can be particularly useful for performing background tasks without interrupting the main program flow. The `Timer` class, part of the threading module, enables scheduling functions to run after a specified interval, making it ideal for delayed or periodic tasks.
+
+Threading is a way to achieve concurrent execution in Python. Each thread runs independently and can perform tasks such as I/O operations, computations, or interacting with the user.
+
+##### Key Concepts
+
+- **Thread**: The smallest unit of a process that can be scheduled and executed.
+- **Main Thread**: The default thread where the Python program starts.
+- **Subthread**: Additional threads created to perform concurrent tasks.
+
+Here's a simple example to illustrate how threading works in Python:
+
+```python
+import threading
+import time
+
+def print_numbers():
+    for i in range(10):
+        print(i)
+        time.sleep(1)
+
+# Create a thread
+thread = threading.Thread(target=print_numbers)
+
+# Start the thread
+thread.start()
+
+# Continue with the main program
+print("Thread started!")
+```
+
+Explanation:
+
+- Import threading: Import the threading module to work with threads.
+- Define Function: Create a function (`print_numbers`) that prints numbers from 0 to 9 with a delay of 1 second.
+- Create a Thread: Initialize a thread that targets the `print_numbers` function.
+- Start the Thread: Use `thread.start()` to begin execution of the thread.
+- Main Program: The main program continues to execute without waiting for the thread to finish.
+
+##### Timer Class
+
+A Timer is a subclass of Thread that allows you to schedule a function to run after a specified interval. 
+This is useful for tasks that need to be executed after a delay or at regular intervals.
+
+Here's an example of how to use the Timer class:
+
+```python
+import threading
+
+def greet():
+    print("Hello, world!")
+
+# Create a timer
+timer = threading.Timer(5, greet)
+
+# Start the timer
+timer.start()
+
+print("Timer started!")
+```
+
+In this example, we'll create a `Timer` that passes parameters to the target function when it executes.
+
+## Code Example
+
+```python
+import threading
+
+def greet(name, message):
+    print(f"Hello, {name}! {message}")
+
+# Parameters to be passed to the target function
+name = "Alice"
+message = "Welcome to the Python threading tutorial."
+
+# Create a Timer
+timer = threading.Timer(5, greet, args=(name, message))
+
+# Start the Timer
+timer.start()
+
+print("Timer started! The greet function will run after 5 seconds with the given parameters.")
+```

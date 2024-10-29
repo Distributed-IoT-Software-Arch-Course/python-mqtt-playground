@@ -28,8 +28,8 @@ def on_message(client, userdata, message):
 
 # Configuration variables
 client_id = "clientId0001-Consumer"
-broker_ip = "155.185.4.4"
-broker_port = 7883
+broker_ip = "<server_ip>"
+broker_port = 1883
 default_topic = "#"
 message_limit = 1000
 username = "<admin_account>"

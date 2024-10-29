@@ -2,8 +2,8 @@
 # You can install it through the following command: pip install paho-mqtt
 
 from model.temperature_sensor import TemperatureSensor
-from model.message_descriptor import MessageDescriptor
-from model.device_descriptor import DeviceDescriptor
+from dto.message_descriptor import MessageDescriptor
+from dto.device_descriptor import DeviceDescriptor
 import paho.mqtt.client as mqtt
 import time
 import uuid

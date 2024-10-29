@@ -2,10 +2,10 @@
 # You can install it through the following command: pip install paho-mqtt
 
 import paho.mqtt.client as mqtt
-from model.device_descriptor import DeviceDescriptor
-from model.message_descriptor import MessageDescriptor
+from dto.device_descriptor import DeviceDescriptor
+from dto.message_descriptor import MessageDescriptor
 import json
-import traceback
+
 
 # Full MQTT client creation with all the parameters. The only one mandatory in the ClientId that should be unique
 # mqtt_client = Client(client_id="", clean_session=True, userdata=None, protocol=MQTTv311, transport=”tcp”)

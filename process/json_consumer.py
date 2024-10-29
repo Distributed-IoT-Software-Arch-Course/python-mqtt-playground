@@ -2,7 +2,7 @@
 # You can install it through the following command: pip install paho-mqtt
 
 import paho.mqtt.client as mqtt
-from model.message_descriptor import MessageDescriptor
+from dto.message_descriptor import MessageDescriptor
 import json
 import traceback
 
